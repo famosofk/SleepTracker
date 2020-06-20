@@ -16,16 +16,15 @@
 
 package com.example.android.trackmysleepquality.sleepquality
 
-import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.android.trackmysleepquality.database.SleepDatabaseDao
 
 @Suppress("UNCHECKED_CAST")
-class SleepQualityViewModelFactory(private val application: Application, private val dao: SleepDatabaseDao) : ViewModelProvider.Factory {
+class SleepQualityViewModelFactory(private val id: Long, private val dao: SleepDatabaseDao) : ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(SleepQualityViewModel::class.java)) {
-            return SleepQualityViewModel(application, dao) as T
+            return SleepQualityViewModel(dao, id) as T
         }
         throw IllegalArgumentException("Tipo errado.")
     }

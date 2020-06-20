@@ -16,10 +16,42 @@
 
 package com.example.android.trackmysleepquality.sleepquality
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import com.example.android.trackmysleepquality.database.SleepDatabaseDao
+import kotlinx.coroutines.*
 
-class SleepQualityViewModel(application: Application, sleepDao: SleepDatabaseDao) : AndroidViewModel(application) {
+class SleepQualityViewModel(val sleepDao: SleepDatabaseDao, private val id: Long) : ViewModel() {
+
+    private val viewModelJob = Job()
+    private val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
+
+    override fun onCleared() {
+        super.onCleared()
+        viewModelJob.cancel()
+    }
+
+    private val _navigateSleepTracker = MutableLiveData<Boolean>(false)
+    val navigateSleepTracker: LiveData<Boolean>
+        get() = _navigateSleepTracker
+
+    fun onSetSleepQuality(qualityNote: Int) {
+        uiScope.launch {
+            withContext(Dispatchers.IO) {
+                val tonight = sleepDao.get(id) ?: return@withContext
+                tonight.quality = qualityNote
+                sleepDao.update(tonight)
+            }
+            _navigateSleepTracker.value = true
+        }
+
+        //aqui ele não tinha dado uiScope.launch, por isso que ele tá iniciando o scope e dando passando o Scope
+    }
+
+    fun doneNavigation() {
+        _navigateSleepTracker.value = false
+    }
+
 
 }
